@@ -3,26 +3,40 @@ package main
 import (
 	"flag"
 	"log"
-	"read-adviser-bot/clients/telegram"
+	tgClient "read-adviser-bot/clients/telegram"
+	event_consumer "read-adviser-bot/consumer/event-consumer"
+	"read-adviser-bot/events/telegram"
+	"read-adviser-bot/storage/files"
 )
 
 const (
-	tgBotHost = "api.telegram.org"
+	tgBotHost   = "api.telegram.org"
+	storagePath = "files_storage"
+	batchSize   = 100
 )
 
+// 7292476924:AAGDsHan6oztWIEEX9vOI-r6nplyrAQQcjg
 func main() {
 	// token = flafs.Get(token)
-	tgClient := telegram.New(tgBotHost, mustToken())
-	_ = tgClient
 
 	// tgclient = telegram.New(token)
 
 	// fetcher = fetcher.New(tgclient)
 
 	// processor = processor.New(tgclient)
+	eventsProcessor := telegram.New(
+		tgClient.New(tgBotHost, mustToken()),
+		files.New(storagePath),
+	)
+
+	log.Println("services started")
 
 	// consumer.start(fetcher, processor)
+	consumer := event_consumer.New(eventsProcessor, eventsProcessor, batchSize)
 
+	if err := consumer.Start(); err != nil {
+		log.Fatal("services is stopped", err)
+	}
 }
 
 func mustToken() string {
