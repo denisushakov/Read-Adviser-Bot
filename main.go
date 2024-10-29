@@ -15,7 +15,6 @@ const (
 	batchSize   = 100
 )
 
-// 7292476924:AAGDsHan6oztWIEEX9vOI-r6nplyrAQQcjg
 func main() {
 	// token = flafs.Get(token)
 
