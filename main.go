@@ -1,31 +1,37 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	tgClient "read-adviser-bot/clients/telegram"
 	event_consumer "read-adviser-bot/consumer/event-consumer"
 	"read-adviser-bot/events/telegram"
-	"read-adviser-bot/storage/files"
+
+	"read-adviser-bot/storage/sqlite"
 )
 
 const (
-	tgBotHost   = "api.telegram.org"
-	storagePath = "files_storage"
-	batchSize   = 100
+	tgBotHost = "api.telegram.org"
+	//storagePath = "files_storage"
+	sqliteStoragePath = "data/sqlite/storage.db"
+	batchSize         = 100
 )
 
 func main() {
-	// token = flafs.Get(token)
+	// s := files.New(storagePath)
+	s, err := sqlite.New(sqliteStoragePath)
+	if err != nil {
+		log.Fatal("can't connect to storage: ", err)
+	}
 
-	// tgclient = telegram.New(token)
+	if err := s.Init(context.TODO()); err != nil {
+		log.Fatal("can't init storage: ", err)
+	}
 
-	// fetcher = fetcher.New(tgclient)
-
-	// processor = processor.New(tgclient)
 	eventsProcessor := telegram.New(
 		tgClient.New(tgBotHost, mustToken()),
-		files.New(storagePath),
+		s,
 	)
 
 	log.Println("services started")
